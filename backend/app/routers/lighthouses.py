@@ -84,7 +84,13 @@ def identify_by_url(
     db: Session = Depends(get_db),
     user: Optional[User] = Depends(get_optional_user),
 ):
-    lh = identify_lighthouse_by_url(db, body.url)
-    if not lh:
-        raise HTTPException(status_code=404, detail="QRコードに対応する灯台が見つかりません")
-    return to_response(lh, user, db)
+    lh, is_jcg = identify_lighthouse_by_url(db, body.url)
+    if lh:
+        return to_response(lh, user, db)
+    if is_jcg:
+        # 海保の灯台カードURLだがDBに未登録 — フロントエンドで手動検索に誘導できるよう区別する
+        raise HTTPException(
+            status_code=404,
+            detail="LIGHTHOUSE_CARD_NOT_REGISTERED",
+        )
+    raise HTTPException(status_code=404, detail="QRコードに対応する灯台が見つかりません")

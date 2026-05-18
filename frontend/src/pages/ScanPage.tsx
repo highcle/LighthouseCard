@@ -6,7 +6,8 @@ import { getLighthouses } from "../api/lighthouses";
 import type { Lighthouse } from "../types";
 import { Link } from "react-router-dom";
 
-type ScanState = "idle" | "scanning" | "found" | "not_found" | "collected";
+// "card_not_registered": 海保の灯台カードURLだがDBに未登録
+type ScanState = "idle" | "scanning" | "found" | "not_found" | "card_not_registered" | "collected";
 
 export default function ScanPage() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -60,8 +61,15 @@ export default function ScanPage() {
       const lh = await identifyByUrl(url);
       setFound(lh);
       setScanState("found");
-    } catch {
-      setScanState("not_found");
+    } catch (err: unknown) {
+      const detail =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      if (detail === "LIGHTHOUSE_CARD_NOT_REGISTERED") {
+        // 海保の灯台カードURLだがDBに未登録 → 手動検索に誘導
+        setScanState("card_not_registered");
+      } else {
+        setScanState("not_found");
+      }
     }
   };
 
@@ -204,13 +212,31 @@ export default function ScanPage() {
         </div>
       )}
 
-      {/* QRコード見つからず */}
+      {/* 海保QRだがDB未登録 */}
+      {scanState === "card_not_registered" && (
+        <div className="bg-blue-50 border border-blue-300 rounded-2xl p-6 text-center mb-4">
+          <div className="text-4xl mb-2">🏮</div>
+          <p className="text-blue-800 font-medium">灯台カードのQRコードを検出しました</p>
+          <p className="text-blue-600 text-sm mt-1">
+            このQRコードはまだデータベースに登録されていません。
+            <br />下の手動検索から灯台を探して収集登録してください。
+          </p>
+          <button
+            onClick={reset}
+            className="mt-4 px-5 py-2 border border-blue-400 text-blue-700 rounded-lg text-sm hover:bg-blue-50"
+          >
+            再スキャン
+          </button>
+        </div>
+      )}
+
+      {/* QRコード見つからず（灯台カード以外） */}
       {scanState === "not_found" && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center mb-4">
           <div className="text-4xl mb-2">🔍</div>
           <p className="text-amber-800 font-medium">対応する灯台が見つかりませんでした</p>
           <p className="text-amber-600 text-sm mt-1">
-            このQRコードは灯台カードのものではないか、データベースに未登録です
+            このQRコードは灯台カード用ではない可能性があります
           </p>
           <button
             onClick={reset}

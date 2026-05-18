@@ -18,7 +18,7 @@ class Lighthouse(Base):
     description: Mapped[Optional[str]] = mapped_column(Text)
     card_image_url: Mapped[Optional[str]] = mapped_column(String(500))
     jcg_page_url: Mapped[Optional[str]] = mapped_column(String(500))
-    qr_url_pattern: Mapped[Optional[str]] = mapped_column(String(500))
+    qr_code_url: Mapped[Optional[str]] = mapped_column(String(500))
     established_year: Mapped[Optional[int]] = mapped_column(Integer)
     is_climbable: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
