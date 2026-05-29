@@ -13,7 +13,7 @@ COPY seed_data.py .
 # DBデータ永続化用ディレクトリ
 RUN mkdir -p /data
 
-EXPOSE 8000
+EXPOSE 8080
 
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh

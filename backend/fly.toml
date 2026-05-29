@@ -1,0 +1,32 @@
+app = "lighthouse-card-api"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  CORS_ORIGINS = "https://lighthouse-card.vercel.app"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [services.http_checks]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "get"
+    path = "/"
+
+[[mounts]]
+  source = "lighthouse_data"
+  destination = "/data"

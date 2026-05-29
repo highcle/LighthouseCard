@@ -189,23 +189,16 @@ def seed():
     db = SessionLocal()
     try:
         existing_count = db.query(Lighthouse).count()
-        target_count = len(LIGHTHOUSES)
-
-        if existing_count == target_count:
-            print(f"灯台データは最新です ({existing_count} 件)")
+        if existing_count > 0:
+            print(f"灯台データは既に存在します ({existing_count} 件) — スキップします")
             return
-
-        print(f"灯台データを更新します: {existing_count} 件 → {target_count} 件")
-        db.query(UserCard).delete()
-        db.query(Lighthouse).delete()
-        db.commit()
 
         for data in LIGHTHOUSES:
             lh = Lighthouse(**data)
             db.add(lh)
-
         db.commit()
 
+        target_count = len(LIGHTHOUSES)
         registered = sum(1 for lh in LIGHTHOUSES if lh.get("qr_code_url"))
         print(f"{target_count} 件の灯台データを投入しました。")
         print(f"  うち QRコードURL登録済み: {registered} 件")
