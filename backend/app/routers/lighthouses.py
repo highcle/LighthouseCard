@@ -9,6 +9,7 @@ from ..models.user import User
 from ..schemas.lighthouse import LighthouseResponse, LighthouseListResponse, IdentifyByUrlRequest, RegisterFromQrRequest
 from ..core.security import decode_token
 from ..services.qr_service import identify_lighthouse_by_url
+from ..services.jcg_scraper import scrape_jcg_lighthouse_page
 
 router = APIRouter(prefix="/lighthouses", tags=["lighthouses"])
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -106,10 +107,29 @@ def identify_by_url(
             db.commit()
         return to_response(lh, user, db)
     if is_jcg:
-        raise HTTPException(
-            status_code=404,
-            detail="LIGHTHOUSE_CARD_NOT_REGISTERED",
-        )
+        scraped = scrape_jcg_lighthouse_page(body.url)
+        name = scraped.get("name")
+        card_image_url = scraped.get("card_image_url")
+        if name:
+            existing = db.query(Lighthouse).filter(Lighthouse.name == name).first()
+            if existing:
+                existing.qr_code_url = body.url.strip()
+                if card_image_url and not existing.card_image_url:
+                    existing.card_image_url = card_image_url
+                db.commit()
+                return to_response(existing, user, db)
+            new_lh = Lighthouse(
+                name=name,
+                region="不明",
+                prefecture="不明",
+                qr_code_url=body.url.strip(),
+                card_image_url=card_image_url,
+            )
+            db.add(new_lh)
+            db.commit()
+            db.refresh(new_lh)
+            return to_response(new_lh, user, db)
+        raise HTTPException(status_code=404, detail="LIGHTHOUSE_CARD_NOT_REGISTERED")
     raise HTTPException(status_code=404, detail="QRコードに対応する灯台が見つかりません")
 
 

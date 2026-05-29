@@ -1,20 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { identifyByUrl, registerFromQr } from "../api/lighthouses";
+import { identifyByUrl } from "../api/lighthouses";
 import { createCard } from "../api/cards";
 import type { Lighthouse } from "../types";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";
 
-type ScanState = "idle" | "scanning" | "found" | "not_found" | "card_not_registered" | "collected" | "new_lighthouse";
+type ScanState = "idle" | "scanning" | "found" | "not_found" | "card_not_registered" | "collected";
 
 export default function ScanPage() {
-  const { user } = useAuthStore();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [found, setFound] = useState<Lighthouse | null>(null);
-  const [scannedUrl, setScannedUrl] = useState("");
-  const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -64,7 +60,6 @@ export default function ScanPage() {
       const detail =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       if (detail === "LIGHTHOUSE_CARD_NOT_REGISTERED") {
-        setScannedUrl(url);
         setScanState("card_not_registered");
       } else {
         setScanState("not_found");
@@ -88,28 +83,9 @@ export default function ScanPage() {
     }
   };
 
-  const handleRegisterNew = async () => {
-    if (!newName.trim()) return;
-    setActionLoading(true);
-    setError("");
-    try {
-      const lh = await registerFromQr({ name: newName.trim(), qr_code_url: scannedUrl });
-      setFound(lh);
-      setScanState("collected");
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? "登録に失敗しました";
-      setError(msg);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const reset = () => {
     setScanState("idle");
     setFound(null);
-    setScannedUrl("");
-    setNewName("");
     setError("");
   };
 
@@ -203,54 +179,21 @@ export default function ScanPage() {
         </div>
       )}
 
-      {/* 海保QRだがDB未登録 → 新規登録フォーム */}
+      {/* 海保QRだがスクレイピング失敗 */}
       {scanState === "card_not_registered" && (
-        <div className="bg-blue-50 border border-blue-300 rounded-2xl p-6 mb-4">
-          <p className="text-blue-800 font-bold text-center mb-1">新しい灯台カードを発見！</p>
-          <p className="text-blue-600 text-sm text-center mb-4">
-            この灯台はまだ登録されていません。灯台名を入力して登録しましょう。
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-6 text-center mb-4">
+          <div className="text-4xl mb-2">⚠️</div>
+          <p className="text-amber-800 font-medium">灯台情報を取得できませんでした</p>
+          <p className="text-amber-600 text-sm mt-1">
+            海上保安庁のサーバーに接続できませんでした。<br />
+            時間をおいて再度お試しください。
           </p>
-          {user ? (
-            <>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="例: 犬吠埼灯台"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={reset}
-                  className="flex-1 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50"
-                >
-                  キャンセル
-                </button>
-                <button
-                  onClick={handleRegisterNew}
-                  disabled={actionLoading || !newName.trim()}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {actionLoading ? "登録中..." : "登録する"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-gray-500 text-center mb-3">
-                登録にはログインが必要です
-              </p>
-              <div className="flex gap-2">
-                <button onClick={reset} className="flex-1 py-2 border rounded-lg text-sm">戻る</button>
-                <Link
-                  to="/login"
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold text-center hover:bg-blue-700"
-                >
-                  ログイン
-                </Link>
-              </div>
-            </>
-          )}
+          <button
+            onClick={reset}
+            className="mt-4 px-5 py-2 border border-amber-400 text-amber-700 rounded-lg text-sm hover:bg-amber-50"
+          >
+            再スキャン
+          </button>
         </div>
       )}
 
