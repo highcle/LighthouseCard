@@ -8,8 +8,8 @@ class LighthouseResponse(BaseModel):
     name_kana: Optional[str]
     region: str
     prefecture: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float]
+    longitude: Optional[float]
     description: Optional[str]
     card_image_url: Optional[str]
     jcg_page_url: Optional[str]

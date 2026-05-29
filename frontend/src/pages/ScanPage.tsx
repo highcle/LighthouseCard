@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { identifyByUrl } from "../api/lighthouses";
 import { createCard } from "../api/cards";
-import { getLighthouses } from "../api/lighthouses";
 import type { Lighthouse } from "../types";
 import { Link } from "react-router-dom";
 
-// "card_not_registered": 海保の灯台カードURLだがDBに未登録
 type ScanState = "idle" | "scanning" | "found" | "not_found" | "card_not_registered" | "collected";
 
 export default function ScanPage() {
@@ -15,9 +13,6 @@ export default function ScanPage() {
   const [found, setFound] = useState<Lighthouse | null>(null);
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Lighthouse[]>([]);
-  const [searching, setSearching] = useState(false);
 
   const stopScanner = async () => {
     if (scannerRef.current) {
@@ -65,7 +60,6 @@ export default function ScanPage() {
       const detail =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       if (detail === "LIGHTHOUSE_CARD_NOT_REGISTERED") {
-        // 海保の灯台カードURLだがDBに未登録 → 手動検索に誘導
         setScanState("card_not_registered");
       } else {
         setScanState("not_found");
@@ -93,32 +87,6 @@ export default function ScanPage() {
     setScanState("idle");
     setFound(null);
     setError("");
-    setSearchQuery("");
-    setSearchResults([]);
-  };
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
-    try {
-      const res = await getLighthouses({ q: searchQuery });
-      setSearchResults(res.items);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleManualCollect = async (lh: Lighthouse) => {
-    setFound(lh);
-    try {
-      await createCard({ lighthouse_id: lh.id });
-      setScanState("collected");
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail ?? "登録に失敗しました";
-      setError(msg);
-    }
   };
 
   useEffect(() => {
@@ -168,7 +136,6 @@ export default function ScanPage() {
       {scanState === "found" && found && (
         <div className="bg-white border-2 border-ocean-400 rounded-2xl p-6">
           <div className="text-center mb-4">
-            <div className="text-4xl mb-2">🏮</div>
             <h2 className="text-lg font-bold text-gray-800">灯台が見つかりました！</h2>
           </div>
           <div className="bg-ocean-50 rounded-xl p-4 mb-4">
@@ -215,11 +182,10 @@ export default function ScanPage() {
       {/* 海保QRだがDB未登録 */}
       {scanState === "card_not_registered" && (
         <div className="bg-blue-50 border border-blue-300 rounded-2xl p-6 text-center mb-4">
-          <div className="text-4xl mb-2">🏮</div>
           <p className="text-blue-800 font-medium">灯台カードのQRコードを検出しました</p>
           <p className="text-blue-600 text-sm mt-1">
             このQRコードはまだデータベースに登録されていません。
-            <br />下の手動検索から灯台を探して収集登録してください。
+            <br />引き続き他の灯台のQRコードをスキャンしてください。
           </p>
           <button
             onClick={reset}
@@ -277,56 +243,6 @@ export default function ScanPage() {
               スキャンを停止
             </button>
           )}
-
-          {/* 手動検索 */}
-          <div className="border-t pt-6">
-            <h2 className="font-medium text-gray-700 mb-3">
-              QRコードが読めない場合は手動で検索
-            </h2>
-            <div className="flex gap-2">
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="灯台名を入力..."
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500"
-              />
-              <button
-                onClick={handleSearch}
-                disabled={searching}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm hover:bg-gray-900 disabled:opacity-50"
-              >
-                検索
-              </button>
-            </div>
-
-            {searchResults.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {searchResults.map((lh) => (
-                  <div
-                    key={lh.id}
-                    className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{lh.name}</p>
-                      <p className="text-xs text-gray-500">{lh.prefecture}</p>
-                    </div>
-                    {lh.is_collected ? (
-                      <span className="text-xs text-green-600 font-medium">収集済み</span>
-                    ) : (
-                      <button
-                        onClick={() => handleManualCollect(lh)}
-                        className="px-3 py-1 bg-ocean-600 text-white text-xs rounded-lg hover:bg-ocean-700"
-                      >
-                        追加
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </>
       )}
     </div>

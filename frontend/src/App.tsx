@@ -46,8 +46,30 @@ export default function App() {
             <Route path="/map" element={<MapPage />} />
           </Routes>
         </main>
-        <footer className="bg-ocean-900 text-white text-center py-4 text-sm">
-          <p>灯台カード収集帳 — 海上保安庁の灯台カードDigitalを管理するアプリ</p>
+        <footer className="bg-ocean-900 text-white text-center py-6 text-xs space-y-2">
+          <p className="font-medium text-sm">灯台カード収集帳</p>
+          <p className="text-ocean-300">
+            本アプリは海上保安庁の承認を得ていない非公式アプリです。海上保安庁とは一切関係ありません。
+          </p>
+          <p>
+            <a
+              href="https://www.kaiho.mlit.go.jp/info/kouhou/h17/k2005-09/k050908.htm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ocean-300 hover:text-white underline"
+            >
+              海上保安庁 海の安全情報・防犯対策
+            </a>
+            {" ｜ "}
+            <a
+              href="https://www.kaiho.mlit.go.jp/soshiki/koutsuu/toudai/card/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ocean-300 hover:text-white underline"
+            >
+              灯台カードDigital（海上保安庁公式）
+            </a>
+          </p>
         </footer>
       </div>
     </BrowserRouter>

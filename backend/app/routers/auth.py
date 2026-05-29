@@ -25,14 +25,11 @@ def get_current_user(
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(body: UserRegister, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.email == body.email).first():
-        raise HTTPException(status_code=400, detail="このメールアドレスは既に登録されています")
     if db.query(User).filter(User.username == body.username).first():
-        raise HTTPException(status_code=400, detail="このユーザー名は既に使用されています")
+        raise HTTPException(status_code=400, detail="このユーザーIDは既に使用されています")
 
     user = User(
         username=body.username,
-        email=body.email,
         password_hash=get_password_hash(body.password),
     )
     db.add(user)
@@ -45,9 +42,9 @@ def register(body: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(body: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == body.email).first()
+    user = db.query(User).filter(User.username == body.username).first()
     if not user or not verify_password(body.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="メールアドレスまたはパスワードが正しくありません")
+        raise HTTPException(status_code=401, detail="ユーザーIDまたはパスワードが正しくありません")
 
     token = create_access_token({"sub": user.id})
     return TokenResponse(access_token=token, user=UserResponse.model_validate(user))

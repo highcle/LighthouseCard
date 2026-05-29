@@ -1,10 +1,9 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 
 class UserRegister(BaseModel):
     username: str
-    email: EmailStr
     password: str
 
     @field_validator("username")
@@ -26,14 +25,13 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 
 class UserResponse(BaseModel):
     id: str
     username: str
-    email: str
     created_at: datetime
 
     model_config = {"from_attributes": True}

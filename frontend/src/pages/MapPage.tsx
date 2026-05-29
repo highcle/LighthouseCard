@@ -44,6 +44,9 @@ export default function MapPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const withCoords = lighthouses.filter(
+    (lh) => lh.latitude != null && lh.longitude != null
+  );
   const collected = lighthouses.filter((lh) => lh.is_collected).length;
 
   return (
@@ -59,7 +62,7 @@ export default function MapPage() {
           <span className="w-3 h-3 rounded-full bg-gray-400 inline-block" />
           未収集
         </span>
-        <span className="text-gray-400 ml-auto">全 {lighthouses.length} 灯台</span>
+        <span className="text-gray-400 ml-auto">全 {lighthouses.length} 灯台（地図表示 {withCoords.length} 件）</span>
       </div>
 
       {loading ? (
@@ -77,10 +80,10 @@ export default function MapPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {lighthouses.map((lh) => (
+          {withCoords.map((lh) => (
             <Marker
               key={lh.id}
-              position={[lh.latitude, lh.longitude]}
+              position={[lh.latitude!, lh.longitude!]}
               icon={lh.is_collected ? collectedIcon : defaultIcon}
             >
               <Popup>

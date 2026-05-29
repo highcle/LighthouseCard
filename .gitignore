@@ -43,3 +43,7 @@ npm-debug.log*
 .coverage
 htmlcov/
 .pytest_cache/
+
+tmp_data/
+
+修正要望1.md

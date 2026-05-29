@@ -6,9 +6,14 @@ export default function TopPage() {
 
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col">
+      {/* 非公式アプリ注意書き */}
+      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-xs text-amber-800">
+        本アプリは海上保安庁の承認を得ていない非公式アプリです。
+        海上保安庁の公式サービスではありません。
+      </div>
+
       {/* ヒーロー */}
       <section className="bg-gradient-to-br from-ocean-800 via-ocean-700 to-ocean-600 text-white py-20 px-4 text-center flex-1 flex flex-col items-center justify-center">
-        <div className="text-7xl mb-6">🏮</div>
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">灯台カード収集帳</h1>
         <p className="text-lg sm:text-xl text-ocean-100 max-w-xl mx-auto mb-8">
           海上保安庁が管理する灯台カードDigitalの収集状況をデジタルで管理。

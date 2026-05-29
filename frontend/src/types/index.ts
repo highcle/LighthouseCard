@@ -1,7 +1,6 @@
 export interface User {
   id: string;
   username: string;
-  email: string;
   created_at: string;
 }
 
@@ -11,8 +10,8 @@ export interface Lighthouse {
   name_kana: string | null;
   region: string;
   prefecture: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   description: string | null;
   card_image_url: string | null;
   jcg_page_url: string | null;

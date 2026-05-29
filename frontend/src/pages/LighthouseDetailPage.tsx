@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getLighthouse } from "../api/lighthouses";
-import { createCard, deleteCard, getCards, updateCard } from "../api/cards";
+import { deleteCard, getCards, updateCard } from "../api/cards";
 import { useAuthStore } from "../store/authStore";
 import type { Lighthouse, Card } from "../types";
 
@@ -15,7 +15,6 @@ export default function LighthouseDetailPage() {
   const [editingNote, setEditingNote] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const load = async () => {
     if (!id) return;
@@ -39,24 +38,6 @@ export default function LighthouseDetailPage() {
   useEffect(() => {
     load();
   }, [id, user]);
-
-  const handleCollect = async () => {
-    if (!lighthouse) return;
-    setActionLoading(true);
-    setError("");
-    try {
-      const newCard = await createCard({ lighthouse_id: lighthouse.id });
-      setCard(newCard);
-      setLighthouse({ ...lighthouse, is_collected: true });
-    } catch (err: unknown) {
-      setError(
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail ?? "登録に失敗しました"
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleRemove = async () => {
     if (!lighthouse) return;
@@ -109,7 +90,9 @@ export default function LighthouseDetailPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-8xl">🏮</span>
+            <div className="w-24 h-24 bg-ocean-300 rounded-full flex items-center justify-center">
+              <span className="text-white text-4xl font-bold">灯</span>
+            </div>
           )}
           {lighthouse.is_collected && (
             <div className="absolute top-3 right-3 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
@@ -150,9 +133,11 @@ export default function LighthouseDetailPage() {
           )}
 
           {/* 座標 */}
-          <p className="mt-3 text-xs text-gray-400">
-            📍 {lighthouse.latitude.toFixed(4)}, {lighthouse.longitude.toFixed(4)}
-          </p>
+          {lighthouse.latitude != null && lighthouse.longitude != null && (
+            <p className="mt-3 text-xs text-gray-400">
+              📍 {lighthouse.latitude.toFixed(4)}, {lighthouse.longitude.toFixed(4)}
+            </p>
+          )}
 
           {/* 海保リンク */}
           {lighthouse.jcg_page_url && (
@@ -164,12 +149,6 @@ export default function LighthouseDetailPage() {
             >
               🔗 海上保安庁の灯台ページ
             </a>
-          )}
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
           )}
 
           {/* 収集アクション */}
@@ -237,13 +216,9 @@ export default function LighthouseDetailPage() {
                   </div>
                 </>
               ) : (
-                <button
-                  onClick={handleCollect}
-                  disabled={actionLoading}
-                  className="w-full py-2.5 bg-ocean-700 text-white rounded-lg font-bold hover:bg-ocean-800 transition-colors disabled:opacity-50"
-                >
-                  {actionLoading ? "登録中..." : "コレクションに追加する"}
-                </button>
+                <p className="text-sm text-gray-500 mt-4">
+                  灯台カードのQRコードをスキャンして収集できます。
+                </p>
               )}
             </div>
           ) : (

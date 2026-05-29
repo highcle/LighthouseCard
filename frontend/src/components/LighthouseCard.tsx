@@ -3,17 +3,9 @@ import type { Lighthouse } from "../types";
 
 interface Props {
   lighthouse: Lighthouse;
-  onCollect?: (id: number) => void;
-  onRemove?: (id: number) => void;
-  loading?: boolean;
 }
 
-export default function LighthouseCardComp({
-  lighthouse,
-  onCollect,
-  onRemove,
-  loading,
-}: Props) {
+export default function LighthouseCardComp({ lighthouse }: Props) {
   const collected = lighthouse.is_collected;
 
   return (
@@ -31,7 +23,9 @@ export default function LighthouseCardComp({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-5xl">🏮</span>
+          <div className="w-12 h-12 bg-ocean-300 rounded-full flex items-center justify-center">
+            <span className="text-white text-xl font-bold">灯</span>
+          </div>
         )}
         {collected && (
           <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -60,28 +54,6 @@ export default function LighthouseCardComp({
           <p className="text-xs text-gray-400 mt-0.5">
             {lighthouse.established_year}年初点灯
           </p>
-        )}
-
-        {(onCollect || onRemove) && (
-          <div className="mt-auto pt-2">
-            {collected ? (
-              <button
-                onClick={() => onRemove?.(lighthouse.id)}
-                disabled={loading}
-                className="w-full text-xs py-1.5 px-3 rounded border border-red-300 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-              >
-                収集を取消
-              </button>
-            ) : (
-              <button
-                onClick={() => onCollect?.(lighthouse.id)}
-                disabled={loading}
-                className="w-full text-xs py-1.5 px-3 rounded bg-ocean-600 text-white hover:bg-ocean-700 transition-colors disabled:opacity-50"
-              >
-                収集済みにする
-              </button>
-            )}
-          </div>
         )}
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getLighthouses } from "../api/lighthouses";
-import { createCard, deleteCard } from "../api/cards";
 import { useAuthStore } from "../store/authStore";
 import type { Lighthouse } from "../types";
 import LighthouseCardComp from "../components/LighthouseCard";
@@ -19,7 +18,6 @@ export default function LighthousesPage() {
   const [lighthouses, setLighthouses] = useState<Lighthouse[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [actionId, setActionId] = useState<number | null>(null);
 
   const region = searchParams.get("region") ?? "";
   const q = searchParams.get("q") ?? "";
@@ -43,26 +41,6 @@ export default function LighthousesPage() {
   useEffect(() => {
     load();
   }, [load]);
-
-  const handleCollect = async (id: number) => {
-    setActionId(id);
-    try {
-      await createCard({ lighthouse_id: id });
-      await load();
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const handleRemove = async (id: number) => {
-    setActionId(id);
-    try {
-      await deleteCard(id);
-      await load();
-    } finally {
-      setActionId(null);
-    }
-  };
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -127,9 +105,6 @@ export default function LighthousesPage() {
             <LighthouseCardComp
               key={lh.id}
               lighthouse={lh}
-              onCollect={user ? handleCollect : undefined}
-              onRemove={user ? handleRemove : undefined}
-              loading={actionId === lh.id}
             />
           ))}
         </div>

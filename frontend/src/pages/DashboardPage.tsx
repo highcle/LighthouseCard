@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
         {recentCards.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-gray-500">
-            <p className="text-4xl mb-3">🏮</p>
+            <p className="text-4xl mb-3">📷</p>
             <p className="font-medium">まだカードを収集していません</p>
             <p className="text-sm mt-1">灯台でQRコードをスキャンして最初のカードをゲットしよう！</p>
             <Link
@@ -135,12 +135,18 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {recentCards.map((card) =>
               card.lighthouse ? (
-                <LighthouseCardComp
-                  key={card.id}
-                  lighthouse={{ ...card.lighthouse, is_collected: true }}
-                  onRemove={handleRemove}
-                  loading={removingId === card.lighthouse_id}
-                />
+                <div key={card.id} className="relative group">
+                  <LighthouseCardComp
+                    lighthouse={{ ...card.lighthouse, is_collected: true }}
+                  />
+                  <button
+                    onClick={() => handleRemove(card.lighthouse_id)}
+                    disabled={removingId === card.lighthouse_id}
+                    className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white text-xs px-1.5 py-0.5 rounded disabled:opacity-50"
+                  >
+                    {removingId === card.lighthouse_id ? "…" : "取消"}
+                  </button>
+                </div>
               ) : null
             )}
           </div>

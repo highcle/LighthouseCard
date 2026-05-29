@@ -86,9 +86,11 @@ def identify_by_url(
 ):
     lh, is_jcg = identify_lighthouse_by_url(db, body.url)
     if lh:
+        if lh.qr_code_url is None:
+            lh.qr_code_url = body.url.strip()
+            db.commit()
         return to_response(lh, user, db)
     if is_jcg:
-        # 海保の灯台カードURLだがDBに未登録 — フロントエンドで手動検索に誘導できるよう区別する
         raise HTTPException(
             status_code=404,
             detail="LIGHTHOUSE_CARD_NOT_REGISTERED",

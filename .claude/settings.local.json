@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(python -m venv venv)",
+      "Bash(./venv/bin/pip install *)"
+    ]
+  }
+}
