@@ -12,7 +12,6 @@ class LighthouseResponse(BaseModel):
     longitude: Optional[float]
     description: Optional[str]
     card_image_url: Optional[str]
-    jcg_page_url: Optional[str]
     qr_code_url: Optional[str]
     established_year: Optional[int]
     is_climbable: bool
