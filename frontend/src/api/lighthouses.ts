@@ -18,3 +18,8 @@ export const identifyByUrl = (url: string) =>
   client
     .post<Lighthouse>("/lighthouses/identify-by-url", { url })
     .then((r) => r.data);
+
+export const registerFromQr = (data: { name: string; qr_code_url: string }) =>
+  client
+    .post<Lighthouse>("/lighthouses/register-from-qr", data)
+    .then((r) => r.data);

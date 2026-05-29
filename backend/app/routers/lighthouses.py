@@ -6,12 +6,27 @@ from ..database import get_db
 from ..models.lighthouse import Lighthouse
 from ..models.user_card import UserCard
 from ..models.user import User
-from ..schemas.lighthouse import LighthouseResponse, LighthouseListResponse, IdentifyByUrlRequest
+from ..schemas.lighthouse import LighthouseResponse, LighthouseListResponse, IdentifyByUrlRequest, RegisterFromQrRequest
 from ..core.security import decode_token
 from ..services.qr_service import identify_lighthouse_by_url
 
 router = APIRouter(prefix="/lighthouses", tags=["lighthouses"])
 bearer_scheme = HTTPBearer(auto_error=False)
+bearer_scheme_required = HTTPBearer()
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme_required),
+    db: Session = Depends(get_db),
+) -> User:
+    from fastapi import status as http_status
+    payload = decode_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=http_status.HTTP_401_UNAUTHORIZED, detail="無効なトークンです")
+    user = db.query(User).filter(User.id == payload.get("sub")).first()
+    if not user:
+        raise HTTPException(status_code=http_status.HTTP_401_UNAUTHORIZED, detail="ユーザーが見つかりません")
+    return user
 
 
 def get_optional_user(
@@ -96,3 +111,33 @@ def identify_by_url(
             detail="LIGHTHOUSE_CARD_NOT_REGISTERED",
         )
     raise HTTPException(status_code=404, detail="QRコードに対応する灯台が見つかりません")
+
+
+@router.post("/register-from-qr", response_model=LighthouseResponse, status_code=201)
+def register_from_qr(
+    body: RegisterFromQrRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    existing = db.query(Lighthouse).filter(Lighthouse.qr_code_url == body.qr_code_url.strip()).first()
+    if existing:
+        card = db.query(UserCard).filter(
+            UserCard.user_id == user.id, UserCard.lighthouse_id == existing.id
+        ).first()
+        if not card:
+            db.add(UserCard(user_id=user.id, lighthouse_id=existing.id))
+            db.commit()
+        return to_response(existing, user, db)
+
+    lh = Lighthouse(
+        name=body.name.strip(),
+        region="不明",
+        prefecture="不明",
+        qr_code_url=body.qr_code_url.strip(),
+    )
+    db.add(lh)
+    db.flush()
+    db.add(UserCard(user_id=user.id, lighthouse_id=lh.id))
+    db.commit()
+    db.refresh(lh)
+    return to_response(lh, user, db)

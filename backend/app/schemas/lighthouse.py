@@ -27,3 +27,8 @@ class LighthouseListResponse(BaseModel):
 
 class IdentifyByUrlRequest(BaseModel):
     url: str
+
+
+class RegisterFromQrRequest(BaseModel):
+    name: str
+    qr_code_url: str
