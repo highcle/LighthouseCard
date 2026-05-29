@@ -15,6 +15,7 @@ export interface Lighthouse {
   description: string | null;
   card_image_url: string | null;
   jcg_page_url: string | null;
+  qr_code_url: string | null;
   established_year: number | null;
   is_climbable: boolean;
   is_collected: boolean | null;

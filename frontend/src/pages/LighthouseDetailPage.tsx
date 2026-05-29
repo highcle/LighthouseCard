@@ -140,9 +140,9 @@ export default function LighthouseDetailPage() {
           )}
 
           {/* 海保リンク */}
-          {lighthouse.jcg_page_url && (
+          {lighthouse.qr_code_url && (
             <a
-              href={lighthouse.jcg_page_url}
+              href={lighthouse.qr_code_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block mt-3 text-xs text-ocean-600 hover:underline"
