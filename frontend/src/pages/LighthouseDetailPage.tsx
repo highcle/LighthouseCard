@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getLighthouse } from "../api/lighthouses";
-import { deleteCard, getCards, updateCard } from "../api/cards";
+import { getCards, updateCard } from "../api/cards";
 import { useAuthStore } from "../store/authStore";
 import type { Lighthouse, Card } from "../types";
 
@@ -38,19 +38,6 @@ export default function LighthouseDetailPage() {
   useEffect(() => {
     load();
   }, [id, user]);
-
-  const handleRemove = async () => {
-    if (!lighthouse) return;
-    if (!confirm("収集記録を削除しますか？")) return;
-    setActionLoading(true);
-    try {
-      await deleteCard(lighthouse.id);
-      setCard(null);
-      setLighthouse({ ...lighthouse, is_collected: false });
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleSaveNote = async () => {
     if (!lighthouse || !card) return;
@@ -156,21 +143,12 @@ export default function LighthouseDetailPage() {
             <div className="mt-6 border-t pt-4">
               {lighthouse.is_collected ? (
                 <>
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm text-green-600 font-medium">
-                      ✓ 収集済み（
-                      {card &&
-                        new Date(card.collected_at).toLocaleDateString("ja-JP")}
-                      ）
-                    </p>
-                    <button
-                      onClick={handleRemove}
-                      disabled={actionLoading}
-                      className="text-xs text-red-500 hover:underline disabled:opacity-50"
-                    >
-                      収集を取消
-                    </button>
-                  </div>
+                  <p className="text-sm text-green-600 font-medium">
+                    ✓ 収集済み（
+                    {card &&
+                      new Date(card.collected_at).toLocaleDateString("ja-JP")}
+                    ）
+                  </p>
 
                   {/* メモ */}
                   <div className="mt-3">

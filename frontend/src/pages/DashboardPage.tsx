@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { getStats } from "../api/cards";
-import { getCards } from "../api/cards";
+import { getStats, getCards } from "../api/cards";
 import type { Stats, Card } from "../types";
 import LighthouseCardComp from "../components/LighthouseCard";
-import { deleteCard } from "../api/cards";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentCards, setRecentCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
-  const [removingId, setRemovingId] = useState<number | null>(null);
-
   const load = async () => {
     setLoading(true);
     try {
@@ -28,16 +24,6 @@ export default function DashboardPage() {
   useEffect(() => {
     load();
   }, []);
-
-  const handleRemove = async (lighthouseId: number) => {
-    setRemovingId(lighthouseId);
-    try {
-      await deleteCard(lighthouseId);
-      await load();
-    } finally {
-      setRemovingId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -135,18 +121,10 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {recentCards.map((card) =>
               card.lighthouse ? (
-                <div key={card.id} className="relative group">
-                  <LighthouseCardComp
-                    lighthouse={{ ...card.lighthouse, is_collected: true }}
-                  />
-                  <button
-                    onClick={() => handleRemove(card.lighthouse_id)}
-                    disabled={removingId === card.lighthouse_id}
-                    className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white text-xs px-1.5 py-0.5 rounded disabled:opacity-50"
-                  >
-                    {removingId === card.lighthouse_id ? "…" : "取消"}
-                  </button>
-                </div>
+                <LighthouseCardComp
+                  key={card.id}
+                  lighthouse={{ ...card.lighthouse, is_collected: true }}
+                />
               ) : null
             )}
           </div>
